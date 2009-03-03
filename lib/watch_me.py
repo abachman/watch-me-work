@@ -3,29 +3,24 @@
 # See: http://trac.dbzteam.org/pyinotify/wiki/Tutorial for original example
 #
 from pyinotify import WatchManager, Notifier, ProcessEvent, \
-    IN_DELETE, IN_CREATE, IN_MODIFY
-
-# Watch directories
-import walker, os
-watch_dir = "/home/adam/workspace/psl-careercenter"
-ignore = "log", ".svn", 'tiny_mce', 'plugins', 'tmp', 'content'
-to_watch = walker.get_watch_directories(watch_dir, ignore)
-print "Watching %i directories under %s" % (len(to_watch), watch_dir)
+    IN_DELETE, IN_CREATE, IN_MODIFY, WatchManagerError
+import os
 
 # Message sender
-from messenger import Sender
+from messenger import NetworkSender as Sender
 message_sender = Sender('adam')
 
 ignore_prefixes = ('.gedit-save',)
 ignore_suffixes = ('~',)
-class PTmp(ProcessEvent):
+
+class Monitor(ProcessEvent):
     def send(self, k, e):
-        notified_on = os.split(e)[1]
+        notified_on = os.path.split(e)[1]
         for ig in ignore_prefixes:
-            if notified_on.starts_with(ig):
+            if notified_on.startswith(ig):
                 return
         for ig in ignore_suffixes:
-            if notified_on.ends_with(ig):
+            if notified_on.endswith(ig):
                 return
         message_sender.send("%s: %s" % (k, e))
 
@@ -38,9 +33,15 @@ class PTmp(ProcessEvent):
     def process_IN_MODIFY(self, event):
         self.send("Modified", event.pathname)
 
-p = PTmp()
-wm = WatchManager()  # Watch Manager
-notifier = Notifier(wm, p) # Notifier
-wdd = wm.add_watch(to_watch, IN_DELETE | IN_CREATE | IN_MODIFY)
+def create_monitor(to_watch):
+    "Create and start a new directory monitor."
+    p = Monitor()
+    wm = WatchManager()  # Watch Manager
+    notifier = Notifier(wm, p, debug=True) # Notifier
+    try: 
+        wdd = wm.add_watch(to_watch, IN_DELETE | IN_CREATE | IN_MODIFY)
+        notifier.loop()
+    except WatchManagerError, err:
+        print err, err.wmd
 
-notifier.loop()
+

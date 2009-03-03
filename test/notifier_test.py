@@ -1,12 +1,9 @@
 import unittest
-import sys
-sys.path.append("../lib")
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import watch_me
 
 class TestNotifier(unittest.TestCase):
-#    def setUp(self):
-#        self.notifier = watch_me.Notifier()
-    
     def test_true(self):
         self.assert_(True)
 
