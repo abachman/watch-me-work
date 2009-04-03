@@ -7,8 +7,8 @@ from pyinotify import WatchManager, Notifier, ProcessEvent, \
 import os
 
 # Message sender
-from messenger import NetworkSender as Sender
-message_sender = Sender('adam')
+from messenger import NetworkSender
+message_sender = NetworkSender('adam')
 
 ignore_prefixes = ('.gedit-save',)
 ignore_suffixes = ('~',)
@@ -22,6 +22,7 @@ class Monitor(ProcessEvent):
         for ig in ignore_suffixes:
             if notified_on.endswith(ig):
                 return
+        #print 'sending...'
         message_sender.send("%s: %s" % (k, e))
 
     def process_IN_CREATE(self, event):
