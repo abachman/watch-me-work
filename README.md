@@ -22,6 +22,8 @@ You should see text getting spit out of the first console (or wherever you have 
 
 ### Status
 
+**2009-04-15** Added config file at lib/config.py, you can use that to change some basic settings on the client and server sides.
+
 **2009-04-02** Can send signals across local connection between file watcher (client) and notification server. 
 
 ### TODO

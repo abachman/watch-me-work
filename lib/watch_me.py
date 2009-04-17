@@ -7,11 +7,12 @@ from pyinotify import WatchManager, Notifier, ProcessEvent, \
 import os
 
 # Message sender
+from config import config
 from messenger import NetworkSender
-message_sender = NetworkSender('adam')
+message_sender = NetworkSender(config['username'])
 
-ignore_prefixes = ('.gedit-save',)
-ignore_suffixes = ('~',)
+ignore_prefixes = config['ignore_prefixes']
+ignore_suffixes = config['ignore_suffixes']
 
 class Monitor(ProcessEvent):
     def send(self, k, e):
