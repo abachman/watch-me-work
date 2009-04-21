@@ -9,12 +9,14 @@ import os
 # Message sender
 from config import config
 from messenger import NetworkSender
-message_sender = NetworkSender(config['username'])
 
 ignore_prefixes = config['ignore_prefixes']
 ignore_suffixes = config['ignore_suffixes']
 
 class Monitor(ProcessEvent):
+    def __init__(self, messenger, *args, **kwargs):
+        ProcessEvent.__init__(self, *args, **kwargs)
+        self.messenger = messenger
     def send(self, k, e):
         notified_on = os.path.split(e)[1]
         for ig in ignore_prefixes:
@@ -24,7 +26,7 @@ class Monitor(ProcessEvent):
             if notified_on.endswith(ig):
                 return
         #print 'sending...'
-        message_sender.send("%s: %s" % (k, e))
+        self.messenger.send("%s: %s" % (k, e))
 
     def process_IN_CREATE(self, event):
         self.send("Creating", event.pathname)
@@ -35,11 +37,12 @@ class Monitor(ProcessEvent):
     def process_IN_MODIFY(self, event):
         self.send("Modified", event.pathname)
 
-def create_monitor(to_watch):
+def create_monitor(to_watch, name):
     "Create and start a new directory monitor."
-    p = Monitor()
+    messenger = NetworkSender(name)
+    p = Monitor(messenger)
     wm = WatchManager()  # Watch Manager
-    notifier = Notifier(wm, p, debug=True) # Notifier
+    notifier = Notifier(wm, p) # Notifier
     try: 
         wdd = wm.add_watch(to_watch, IN_DELETE | IN_CREATE | IN_MODIFY)
         notifier.loop()

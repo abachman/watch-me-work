@@ -38,6 +38,7 @@ class NetworkSender(Sender):
            self.name)
 
     def send(self, message):
+        print self.message(message)
         liblo.send(self.target, 
             "/notify", 
             self.name, 
